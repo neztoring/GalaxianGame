@@ -2,15 +2,15 @@ import random
 import esper
 from src.ecs.components.Tags.c_tag_star import CTagStar
 from src.ecs.components.Tags.c_tag_text_mov import CTagTextMov
-from src.ecs.components.c_moving_text import CMovingText
+from src.ecs.components.c_move_to import CMoveTo
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_trasform import CTransform
 from src.ecs.components.c_velocity import CVelocity
 
 
-def system_movement_text(world:esper.World, delta_time:float,screen_h:str):
+def system_movement_to(world:esper.World, delta_time:float):
 
-    components = world.get_components(CTransform,CVelocity,CSurface,CMovingText)
+    components = world.get_components(CTransform,CVelocity,CSurface,CMoveTo)
 
     c_t:CTransform
     c_v:CVelocity
