@@ -40,12 +40,12 @@ class MenuScene(Scene):
         self.ecs_world.add_component(self._text_hi_score,CMovingText( (pygame.Vector2(128,(self.window_cfg['size']['h'])+20)),pygame.Vector2(128,10) ))
         
         self._textup=create_text(self.ecs_world, "   00", 8, 
-                    pygame.Color(255, 0, 0), pygame.Vector2(20, (self.window_cfg['size']['h'])+30), TextAlignment.LEFT,0)
+                    pygame.Color(255, 255, 255), pygame.Vector2(20, (self.window_cfg['size']['h'])+30), TextAlignment.LEFT,0)
         self.ecs_world.add_component(self._textup,CVelocity(vel=pygame.Vector2(20,20)) )
         self.ecs_world.add_component(self._textup,CMovingText( (pygame.Vector2(128,(self.window_cfg['size']['h'])+20)),pygame.Vector2(128,20) )) 
 
         self._textscore=create_text(self.ecs_world, "               5000", 8, 
-                    pygame.Color(255, 0, 0), pygame.Vector2(20, (self.window_cfg['size']['h'])+30), TextAlignment.LEFT,0)
+                    pygame.Color(51, 51, 255), pygame.Vector2(20, (self.window_cfg['size']['h'])+30), TextAlignment.LEFT,0)
         self.ecs_world.add_component(self._textscore,CVelocity(vel=pygame.Vector2(20,20)) )
         self.ecs_world.add_component(self._textscore,CMovingText( (pygame.Vector2(128,(self.window_cfg['size']['h'])+20)),pygame.Vector2(128,20) ))  
 
