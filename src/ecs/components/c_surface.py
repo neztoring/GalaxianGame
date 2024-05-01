@@ -2,16 +2,18 @@ import pygame
 
 
 class CSurface:
-    def __init__(self,size:pygame.Vector2,color:pygame.color) -> None:
+    def __init__(self,size:pygame.Vector2,color:pygame.color,blink_rate:str) -> None:
         self.surf = pygame.Surface(size)
         self.surf.fill(color) 
         self.area = self.surf.get_rect()
         self.color = color
         self.visible = True
+        self.timer = 0
+        self.blink_rate = blink_rate
 
     @classmethod
-    def from_text(cls, text:str, font:pygame.font.Font, color:pygame.color):
-        c_surf = cls(pygame.Vector2(0,0), color)
+    def from_text(cls, text:str, font:pygame.font.Font, color:pygame.color,blink_rate:str):
+        c_surf = cls(pygame.Vector2(0,0), color,blink_rate)
         c_surf.surf = font.render(text, True, color)
         c_surf.area = c_surf.surf.get_rect()
         return c_surf

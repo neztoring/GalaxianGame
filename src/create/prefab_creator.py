@@ -12,11 +12,11 @@ from src.ecs.components.c_velocity import CVelocity
 
 def create_star(world: esper.World, pos: pygame.Vector2, color: pygame.Vector2,vel: pygame.Vector2,blink_rate:str) -> int:
     star_entity = world.create_entity()
-    world.add_component(star_entity,CSurface(size=pygame.Vector2(1,1),color=color))
+    world.add_component(star_entity,CSurface(size=pygame.Vector2(1,1),color=color,blink_rate=blink_rate))
     world.add_component(star_entity,CTransform(pos=pos))
     world.add_component(star_entity,CVelocity(vel=vel))    
     world.add_component(star_entity, CTagStar())
-    world.add_component(star_entity,CBlink(blink_rate=blink_rate) )
+
 
 
     return star_entity

@@ -11,7 +11,7 @@ class PlayScene(Scene):
 
     def do_create(self):
         create_text(self.ecs_world, "Started!", 16, 
-                    pygame.Color(255, 0, 0), pygame.Vector2(128, 120), TextAlignment.CENTER)
+                    pygame.Color(255, 0, 0), pygame.Vector2(128, 120), TextAlignment.CENTER,0)
       
         
 

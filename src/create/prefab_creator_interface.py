@@ -13,11 +13,11 @@ class TextAlignment(Enum):
     CENTER = 2
 
 def create_text(world:esper.World, txt:str, size:int, 
-                color:pygame.Color, pos:pygame.Vector2, alignment:TextAlignment) -> int:
+                color:pygame.Color, pos:pygame.Vector2, alignment:TextAlignment,blink_rate:float) -> int:
     font = ServiceLocator.fonts_service.get("assets/fnt/PressStart2P.ttf", size)
     text_entity = world.create_entity()
 
-    world.add_component(text_entity, CSurface.from_text(txt, font, color))
+    world.add_component(text_entity, CSurface.from_text(txt, font, color,blink_rate))
     txt_s = world.component_for_entity(text_entity, CSurface)
 
     # De acuerdo al alineamiento, determia el origine de la superficie
