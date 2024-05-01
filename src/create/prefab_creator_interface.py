@@ -30,3 +30,5 @@ def create_text(world:esper.World, txt:str, size:int,
     world.add_component(text_entity,
                         CTransform(pos + origin))
     return text_entity
+
+

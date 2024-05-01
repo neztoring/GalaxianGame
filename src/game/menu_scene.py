@@ -1,7 +1,7 @@
 import json
 import pygame
 
-from src.create.prefab_creator import create_star_spawner
+from src.create.prefab_creator import create_logo, create_star_spawner
 from src.ecs.components.Tags.c_tag_text_mov import CTagTextMov
 from src.ecs.components.c_moving_text import CMovingText
 from src.ecs.components.c_velocity import CVelocity
@@ -28,9 +28,9 @@ class MenuScene(Scene):
     def do_create(self):
 
         self._textpress=create_text(self.ecs_world, "PRESS Z TO START", 8, 
-                    pygame.Color(255, 0, 0), pygame.Vector2(128, (self.window_cfg['size']['h'])+80), TextAlignment.CENTER,0.5)
+                    pygame.Color(255, 0, 0), pygame.Vector2(128, (self.window_cfg['size']['h'])+120), TextAlignment.CENTER,0.5)
         self.ecs_world.add_component(self._textpress,CVelocity(vel=pygame.Vector2(10,10)) )
-        self.ecs_world.add_component(self._textpress,CMovingText( (pygame.Vector2(128,(self.window_cfg['size']['h'])+40)),pygame.Vector2(128,180) )) 
+        self.ecs_world.add_component(self._textpress,CMovingText( (pygame.Vector2(128,(self.window_cfg['size']['h'])+120)),pygame.Vector2(128,180) )) 
  
 
 
@@ -49,7 +49,7 @@ class MenuScene(Scene):
         self.ecs_world.add_component(self._textscore,CVelocity(vel=pygame.Vector2(20,20)) )
         self.ecs_world.add_component(self._textscore,CMovingText( (pygame.Vector2(128,(self.window_cfg['size']['h'])+20)),pygame.Vector2(128,20) ))  
 
-
+        create_logo(self.ecs_world,self.window_cfg,pygame.Vector2(60, (self.window_cfg['size']['h'])+35))
 
         start_game_action = self.ecs_world.create_entity()
         self.ecs_world.add_component(start_game_action,
