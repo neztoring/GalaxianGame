@@ -21,3 +21,10 @@ class CSurface:
         new_rect.topleft= pos_topleft.copy()
 
         return new_rect
+    
+    @classmethod
+    def from_surface(cls, surface:pygame.Surface):
+        c_surf=cls(pygame.Vector2(0,0),pygame.Color(0,0,0))
+        c_surf.surf=surface
+        c_surf.area=surface.get_rect()
+        return c_surf
