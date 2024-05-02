@@ -68,7 +68,7 @@ class PlayScene(Scene):
         self.ecs_world._clear_dead_entities()
         self.curret_time=pygame.time.get_ticks()
         self.play_time=self.curret_time-self.start_time>3500
-        self.game_over=self.curret_time-self.start_time>6000 #TODO - Cambiar esto a cuando haya colisión con el jugador
+        self.game_over=self.curret_time-self.start_time>8000 #TODO - Cambiar esto a cuando haya colisión con el jugador
         
         system_blink(self.ecs_world,delta_time)
         if not self.pause:
@@ -76,6 +76,7 @@ class PlayScene(Scene):
             system_screen_player(self.ecs_world, self._game_engine.screen)          
             if self.play_time: 
                 #self.ecs_world.delete_entity(self.ready)
+                #TODO - Revisar error al eliminar entidad
                 pass
             if self.game_over:         
                 if not self.game_over_released:
@@ -84,6 +85,7 @@ class PlayScene(Scene):
                     ServiceLocator.sounds_service.play(self.player_cfg["sound_over"])
                     self.game_over_time=self.curret_time
                     #self.ecs_world.delete_entity(self.player_entity)
+                    #TODO - Revisar error al eliminar entidad
                     self.game_over_released=True
                 elif self.curret_time-self.game_over_time>3500:
                     self.switch_scene("MENU_SCENE")
