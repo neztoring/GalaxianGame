@@ -21,6 +21,7 @@ class PlayScene(Scene):
         self.pause = False
         self.play_time = False
         self.game_over = False
+        self.game_ready_deleted = False
         self.game_over_released = False
         with open("assets/cfg/player.json", encoding="utf-8") as player_file:
             self.player_cfg = json.load(player_file)   
@@ -70,22 +71,21 @@ class PlayScene(Scene):
         self.play_time=self.curret_time-self.start_time>3500
         self.game_over=self.curret_time-self.start_time>8000 #TODO - Cambiar esto a cuando haya colisión con el jugador
         
+        
         system_blink(self.ecs_world,delta_time)
         if not self.pause:
             system_movement(self.ecs_world, delta_time)
-            system_screen_player(self.ecs_world, self._game_engine.screen)          
-            if self.play_time: 
-                #self.ecs_world.delete_entity(self.ready)
-                #TODO - Revisar error al eliminar entidad
-                pass
+            system_screen_player(self.ecs_world, self._game_engine.screen)    
+            if self.play_time and not self.game_ready_deleted: 
+                self.game_ready_deleted=True
+                self.ecs_world.delete_entity(self.ready)
             if self.game_over:         
                 if not self.game_over_released:
                     create_text(self.ecs_world, "GAME OVER", 8, 
                                 pygame.Color(255, 255, 255), pygame.Vector2(128, 120), TextAlignment.CENTER, 0)
                     ServiceLocator.sounds_service.play(self.player_cfg["sound_over"])
                     self.game_over_time=self.curret_time
-                    #self.ecs_world.delete_entity(self.player_entity)
-                    #TODO - Revisar error al eliminar entidad
+                    self.ecs_world.delete_entity(self.player_entity)
                     self.game_over_released=True
                 elif self.curret_time-self.game_over_time>3500:
                     self.switch_scene("MENU_SCENE")
