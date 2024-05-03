@@ -30,3 +30,4 @@ class CSurface:
         new_rect.topleft= pos_topleft.copy()
 
         return new_rect
+

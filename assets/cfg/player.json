@@ -1,0 +1,11 @@
+{
+    "image": "assets/img/invaders_char.png",
+    "input_velocity": 100,
+    "position": {
+        "x": 128,
+        "y": 224
+    },
+    "max_bullets": 1,
+    "sound_intro":"assets/snd/game_start.ogg",
+    "sound_over":"assets/snd/game_over.ogg"
+}
