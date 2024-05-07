@@ -2,7 +2,7 @@ import json
 import time
 import pygame, esper
 
-from src.create.prefab_creator import create_input_player, create_player_square
+from src.create.prefab_creator import create_player_bullet, create_input_player, create_player_square
 from src.create.prefab_creator_interface import TextAlignment, create_text
 from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_surface import CSurface
@@ -10,6 +10,7 @@ from src.ecs.components.c_trasform import CTransform
 from src.ecs.components.c_velocity import CVelocity
 from src.ecs.systems.s_blink import system_blink
 from src.ecs.systems.s_movement import system_movement
+from src.ecs.systems.s_player_bullet_delete import system_player_bullet_delete
 from src.ecs.systems.s_screen_player import system_screen_player
 from src.engine.scenes.scene import Scene
 import src.engine.game_engine
@@ -56,6 +57,9 @@ class PlayScene(Scene):
                 self.player_c_v.vel.x += self.player_cfg['input_velocity']
             elif action.phase == CommandPhase.END:
                 self.player_c_v.vel.x -= self.player_cfg['input_velocity']
+        if action.name=="PLAYER_FIRE":
+            if action.phase == CommandPhase.START:
+                create_player_bullet(self.ecs_world, self.player_c_t.pos, self.player_c_s.surf.get_rect(), self.player_cfg["bullets"])
         if action.name=='PAUSE' and self.play_time:
             if action.phase == CommandPhase.START:
                 if not self.pause:  
@@ -66,6 +70,7 @@ class PlayScene(Scene):
                 self.pause = not self.pause
     
     def do_update(self,delta_time:float):
+        system_player_bullet_delete(self.ecs_world, self._game_engine.screen)
         self.ecs_world._clear_dead_entities()
         self.curret_time=pygame.time.get_ticks()
         self.play_time=self.curret_time-self.start_time>3500
