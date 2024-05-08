@@ -5,6 +5,7 @@ from src.ecs.components.Tags.c_tag_player import CTagPlayer
 from src.ecs.components.Tags.c_tag_player_bullet import CTagPlayerBullet
 from src.ecs.components.Tags.c_tag_star import CTagStar
 from src.ecs.components.c_blink import CBlink
+from src.ecs.components.c_enemy_starship import CEnemyStarship, EnemyStarshipData
 from src.ecs.components.c_input_command import CInputCommand
 from src.ecs.components.c_move_to import CMoveTo
 from src.ecs.components.c_star_spawner import CStarSpawner
@@ -93,3 +94,18 @@ def create_player_bullet(world: esper.World, player_pos: pygame.Vector2, player_
         world.add_component(bullet_entity, CTransform(pos=bullet_position))
         world.add_component(bullet_entity, CVelocity(vel=bullet_velocity))
         world.add_component(bullet_entity, CTagPlayerBullet())
+        
+def create_enemy_starship(world: esper.World, level_data: dict):
+    starship_entity = world.create_entity()
+    world.add_component(starship_entity, CEnemyStarship(level_data))
+
+
+def create_enemy(world:esper.World, enemy_starship_conf: dict, position: pygame.Vector2):
+    enemy_starship_entity = world.create_entity()
+    world.add_component(enemy_starship_entity, 
+                                CSurface(pygame.Vector2(enemy_starship_conf['size']['x'],enemy_starship_conf['size']['y']), 
+                                         pygame.Color(enemy_starship_conf['color']['r'], enemy_starship_conf['color']['g'],enemy_starship_conf['color']['b']), blink_rate=0))
+    world.add_component(enemy_starship_entity,
+                                CTransform(pygame.Vector2(position.x, position.y)))
+    world.add_component(enemy_starship_entity,
+                                CVelocity(pygame.Vector2(0, 0)))

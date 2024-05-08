@@ -2,12 +2,13 @@ import json
 import time
 import pygame, esper
 
-from src.create.prefab_creator import create_player_bullet, create_input_player, create_player_square
+from src.create.prefab_creator import create_enemy_starship, create_player_bullet, create_input_player, create_player_square
 from src.create.prefab_creator_interface import TextAlignment, create_text
 from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_trasform import CTransform
 from src.ecs.components.c_velocity import CVelocity
+from src.ecs.systems.s_allocate_starships_enemies import system_allocate_starship_enemies
 from src.ecs.systems.s_blink import system_blink
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_player_bullet_delete import system_player_bullet_delete
@@ -26,6 +27,10 @@ class PlayScene(Scene):
         self.game_over_released = False
         with open("assets/cfg/player.json", encoding="utf-8") as player_file:
             self.player_cfg = json.load(player_file)   
+        with open("assets/cfg/enemies.json", encoding="utf-8") as enemies_file:
+            self.enemies_cfg = json.load(enemies_file)
+        with open("assets/cfg/level_01.json", encoding="utf-8") as level_file:
+            self.level_cfg = json.load(level_file)
         super().__init__(engine)
 
     def do_create(self):
@@ -42,6 +47,7 @@ class PlayScene(Scene):
                                      CInputCommand("QUIT_TO_MENU", pygame.K_ESCAPE))
         
         create_input_player(self.ecs_world)
+        create_enemy_starship(self.ecs_world, self.level_cfg)
         
         
     def do_action(self, action: CInputCommand):
@@ -71,10 +77,11 @@ class PlayScene(Scene):
     
     def do_update(self,delta_time:float):
         system_player_bullet_delete(self.ecs_world, self._game_engine.screen)
+        system_allocate_starship_enemies(self.ecs_world, self.enemies_cfg)
         self.ecs_world._clear_dead_entities()
         self.curret_time=pygame.time.get_ticks()
         self.play_time=self.curret_time-self.start_time>3500
-        self.game_over=self.curret_time-self.start_time>8000 #TODO - Cambiar esto a cuando haya colisión con el jugador
+        #self.game_over=self.curret_time-self.start_time>8000 #TODO - Cambiar esto a cuando haya colisión con el jugador
         
         
         system_blink(self.ecs_world,delta_time)

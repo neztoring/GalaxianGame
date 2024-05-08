@@ -7,6 +7,7 @@ from src.ecs.components.c_move_to import CMoveTo
 from src.ecs.components.c_velocity import CVelocity
 from src.ecs.systems.s_blink import system_blink
 from src.ecs.systems.s_movement_star import system_movement_star
+import src.engine.game_engine
 
 from src.ecs.systems.s_blink import system_blink
 from src.ecs.systems.s_movement_to import system_movement_to
