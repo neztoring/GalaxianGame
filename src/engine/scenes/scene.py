@@ -2,6 +2,7 @@ import pygame
 import esper
 
 from src.ecs.components.c_input_command import CInputCommand
+from src.ecs.systems.s_animation import system_animation
 from src.ecs.systems.s_input import system_input
 from src.ecs.systems.s_rendering import system_rendering
 import src.engine.game_engine
@@ -17,6 +18,7 @@ class Scene:
 
     def simulate(self, delta_time):
         self.do_update(delta_time)
+        system_animation(self.ecs_world, delta_time)
         self.ecs_world._clear_dead_entities()
 
     def clean(self):
@@ -31,6 +33,7 @@ class Scene:
 
     def do_update(self, delta_time:float):
         pass
+        
 
     def do_draw(self, screen):
         system_rendering(self.ecs_world, screen)
