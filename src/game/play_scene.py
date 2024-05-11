@@ -2,16 +2,17 @@ import json
 import time
 import pygame, esper
 
-from src.create.prefab_creator import create_enemy_starship, create_player_bullet, create_input_player, create_player_square
+from src.create.prefab_creator import create_enemy_starship, create_player_bullet, create_input_player, create_player_square, create_starship_enemies
 from src.create.prefab_creator_interface import TextAlignment, create_text
 from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_trasform import CTransform
 from src.ecs.components.c_velocity import CVelocity
-from src.ecs.systems.s_allocate_starships_enemies import system_allocate_starship_enemies
+from src.ecs.systems.s_animation import system_animation
 from src.ecs.systems.s_blink import system_blink
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_player_bullet_delete import system_player_bullet_delete
+from src.ecs.systems.s_screen_bounce import system_enemy_screen_bounce
 from src.ecs.systems.s_screen_player import system_screen_player
 from src.engine.scenes.scene import Scene
 import src.engine.game_engine
@@ -48,6 +49,7 @@ class PlayScene(Scene):
         
         create_input_player(self.ecs_world)
         create_enemy_starship(self.ecs_world, self.level_cfg)
+        create_starship_enemies(self.ecs_world, self.enemies_cfg)
         
         
     def do_action(self, action: CInputCommand):
@@ -77,7 +79,6 @@ class PlayScene(Scene):
     
     def do_update(self,delta_time:float):
         system_player_bullet_delete(self.ecs_world, self._game_engine.screen)
-        system_allocate_starship_enemies(self.ecs_world, self.enemies_cfg)
         self.ecs_world._clear_dead_entities()
         self.curret_time=pygame.time.get_ticks()
         self.play_time=self.curret_time-self.start_time>3500
@@ -87,6 +88,8 @@ class PlayScene(Scene):
         system_blink(self.ecs_world,delta_time)
         if not self.pause:
             system_movement(self.ecs_world, delta_time)
+            system_animation(self.ecs_world, delta_time)
+            system_enemy_screen_bounce(self.ecs_world, self._game_engine.screen, self.level_cfg)
             system_screen_player(self.ecs_world, self._game_engine.screen)    
             if self.play_time and not self.game_ready_deleted: 
                 self.game_ready_deleted=True
