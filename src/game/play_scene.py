@@ -1,3 +1,4 @@
+from enum import Enum
 import json
 import time
 import pygame, esper
@@ -10,17 +11,26 @@ from src.ecs.components.c_trasform import CTransform
 from src.ecs.components.c_velocity import CVelocity
 from src.ecs.systems.s_animation import system_animation
 from src.ecs.systems.s_blink import system_blink
+from src.ecs.systems.s_collision_bullet_enemy import system_collision_bullet_enemy
+from src.ecs.systems.s_collision_bullet_player import system_collision_bullet_player
+from src.ecs.systems.s_enemy_fire import system_enemy_fire
 from src.ecs.systems.s_movement import system_movement
-from src.ecs.systems.s_player_bullet_delete import system_player_bullet_delete
+from src.ecs.systems.s_bullet_delete import system_bullet_delete
+from src.ecs.systems.s_rendering import system_rendering
+from src.ecs.systems.s_rendering_debug import system_rendering_debug
 from src.ecs.systems.s_screen_bounce import system_enemy_screen_bounce
 from src.ecs.systems.s_screen_player import system_screen_player
 from src.engine.scenes.scene import Scene
 import src.engine.game_engine
 from src.engine.service_locator import ServiceLocator
 
+class DebugView(Enum):
+    NONE = 0
+    RECTS = 1
+
 class PlayScene(Scene):
     def __init__(self, engine:'src.engine.game_engine.GameEngine') -> None:
-        
+
         with open("assets/cfg/player.json", encoding="utf-8") as player_file:
             self.player_cfg = json.load(player_file)   
         with open("assets/cfg/enemies.json", encoding="utf-8") as enemies_file:
@@ -29,6 +39,8 @@ class PlayScene(Scene):
             self.level_cfg = json.load(level_file)
         with open("assets/cfg/window.json", encoding="utf-8") as level_file:
             self.windows_cfg = json.load(level_file)
+        with open("assets/cfg/explosion.json", encoding="utf-8") as explosion_file:
+            self.explosion_cfg = json.load(explosion_file)
         super().__init__(engine)
         self.level=1
 
@@ -41,6 +53,7 @@ class PlayScene(Scene):
         self.game_ready_deleted = False
         self.game_over_released = False
         self.level_achieved=False
+        self.debug_mode = DebugView.NONE
 
         self.player_entity=create_player_square(self.ecs_world, self.player_cfg)
         self.player_c_v=self.ecs_world.component_for_entity(self.player_entity, CVelocity)
@@ -72,8 +85,7 @@ class PlayScene(Scene):
                 self.player_c_v.vel.x += self.player_cfg['input_velocity']
             elif action.phase == CommandPhase.END:
                 self.player_c_v.vel.x -= self.player_cfg['input_velocity']
-        if action.name=="PLAYER_FIRE" and self.play_time:
-            if action.phase == CommandPhase.START:
+        if action.name=="PLAYER_FIRE" and self.play_time and action.phase == CommandPhase.START:
                 create_player_bullet(self.ecs_world, self.player_c_t.pos, self.player_c_s.surf.get_rect(), self.player_cfg["bullets"])
         if action.name=='PAUSE' and self.play_time:
             if action.phase == CommandPhase.START:          
@@ -84,6 +96,11 @@ class PlayScene(Scene):
                 else:
                     self.ecs_world.delete_entity(self.pause_text)
                 self.pause = not self.pause
+        if action.name=="DEBUG" and action.phase == CommandPhase.START:
+            if self.debug_mode == DebugView.NONE:
+                self.debug_mode = DebugView.RECTS
+            elif self.debug_mode == DebugView.RECTS:
+                self.debug_mode = DebugView.NONE
     
     def do_update(self,delta_time:float):
 
@@ -93,7 +110,7 @@ class PlayScene(Scene):
             self.ecs_world._clear_dead_entities()
             self.do_create()
 
-        system_player_bullet_delete(self.ecs_world, self._game_engine.screen)
+        system_bullet_delete(self.ecs_world, self._game_engine.screen)
         self.ecs_world._clear_dead_entities()
         self.curret_time=pygame.time.get_ticks()
         self.play_time=self.curret_time-self.start_time>3500
@@ -105,7 +122,10 @@ class PlayScene(Scene):
             system_movement(self.ecs_world, delta_time)
             system_animation(self.ecs_world, delta_time)
             system_enemy_screen_bounce(self.ecs_world, self._game_engine.screen, self.level_cfg)
-            system_screen_player(self.ecs_world, self._game_engine.screen)    
+            system_screen_player(self.ecs_world, self._game_engine.screen) 
+            system_enemy_fire(self.ecs_world, delta_time ,self.level_cfg["enemy_bullet"])
+            system_collision_bullet_enemy(self.ecs_world)   
+            system_collision_bullet_player(self.ecs_world, self.player_cfg, self.explosion_cfg, self.player_cfg)
             if self.play_time and not self.game_ready_deleted: 
                 self.game_ready_deleted=True
                 self.ecs_world.delete_entity(self.ready)
@@ -121,6 +141,12 @@ class PlayScene(Scene):
                     self.game_over_released=True
                 elif self.curret_time-self.game_over_time>3500:
                     self.switch_scene("MENU_SCENE")
+    
+    def do_draw(self, screen):
+        if self.debug_mode == DebugView.RECTS:
+            system_rendering_debug(self.ecs_world, screen)
+        else:
+            system_rendering(self.ecs_world, screen)
                 
                 
 

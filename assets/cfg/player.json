@@ -9,6 +9,7 @@
     "sound_over":"assets/snd/game_over.ogg",
     "game_paused":"assets/snd/game_over.ogg",
     "bullets": {
+        "sound": "assets/snd/player_shoot.ogg",
         "max_bullets": 1,
         "size": {
             "w": 1,
