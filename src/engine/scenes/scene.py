@@ -31,6 +31,7 @@ class Scene:
 
     def do_update(self, delta_time:float):
         pass
+        
 
     def do_draw(self, screen):
         system_rendering(self.ecs_world, screen)

@@ -1,10 +1,13 @@
 import esper
 import pygame
 
+from src.ecs.components.Tags.c_tag_enemy import CTagEnemy
 from src.ecs.components.Tags.c_tag_player import CTagPlayer
 from src.ecs.components.Tags.c_tag_player_bullet import CTagPlayerBullet
 from src.ecs.components.Tags.c_tag_star import CTagStar
+from src.ecs.components.c_animation import CAnimation
 from src.ecs.components.c_blink import CBlink
+from src.ecs.components.c_enemy_starship import CEnemyStarship, EnemyStarshipData
 from src.ecs.components.c_input_command import CInputCommand
 from src.ecs.components.c_move_to import CMoveTo
 from src.ecs.components.c_star_spawner import CStarSpawner
@@ -93,3 +96,37 @@ def create_player_bullet(world: esper.World, player_pos: pygame.Vector2, player_
         world.add_component(bullet_entity, CTransform(pos=bullet_position))
         world.add_component(bullet_entity, CVelocity(vel=bullet_velocity))
         world.add_component(bullet_entity, CTagPlayerBullet())
+        
+def create_enemy_starship(world: esper.World, level_data: dict):
+    starship_entity = world.create_entity()
+    world.add_component(starship_entity, CEnemyStarship(level_data))
+
+
+def create_enemy(world:esper.World, enemy_starship_conf: dict, position: pygame.Vector2, distance_pivot: float):
+    starship_sprite = ServiceLocator.images_service.get(enemy_starship_conf['image'])
+    size = starship_sprite.get_size()
+    size = [size[0] / enemy_starship_conf['animations']["number_frames"], size[1]]
+    velocity = pygame.Vector2(20, 0)
+    starship_entity = create_sprite(world,position,velocity,starship_sprite)
+    world.add_component(starship_entity, CAnimation(enemy_starship_conf['animations']))
+    world.add_component(starship_entity, CTagEnemy(distance_pivot))
+    
+def create_starship_enemies(world: esper.World, enemies_config: dict):
+    components = world.get_component(CEnemyStarship)
+    c_es: CEnemyStarship
+    acum = 1
+    for _, (c_es) in components:
+        for i, matrix_starship in enumerate(c_es.enemy_starship_data):
+            for row_starship in matrix_starship.enemy_starships:
+                for z, column_starship in enumerate(row_starship):
+                    size_x = enemies_config[matrix_starship.enemy_starship_type]['size']['x']
+                    size_y = enemies_config[matrix_starship.enemy_starship_type]['size']['y']
+                    position_updated = pygame.Vector2(column_starship.position.x 
+                                                      + ((size_x + column_starship.separation_space_x) * (i + 1)) 
+                                                      + ((size_x + column_starship.separation_space_x) * (z + 1)), 
+                                                      column_starship.position.y - ((size_y + column_starship.separation_space_y) * (acum + 1)))
+                    if i == len(c_es.enemy_starship_data) - 1 and z > 0:
+                        position_updated.x = position_updated.x + (size_x + column_starship.separation_space_x) * 2
+                    distance_pivot = position_updated.x - row_starship[-1].position.x
+                    create_enemy(world, enemies_config[matrix_starship.enemy_starship_type],position_updated, distance_pivot)
+                acum += 1

@@ -1,0 +1,56 @@
+{
+  "border_space": {
+    "left": 15,
+    "right": 15
+  },
+  "pivot_position_ship": {
+      "x": 30,
+      "y": 120
+  },
+  "enemy_starships": [
+    {
+      "starship_type": "MartianShipA",
+      "starship_quantity": {
+        "rows": 3,
+        "columns": 10
+      },
+      "separation_space": {
+        "x": 5,
+        "y": 5
+      }
+    },
+    {
+      "starship_type": "MartianShipB",
+      "starship_quantity": {
+        "rows": 1,
+        "columns": 8
+      },
+      "separation_space": {
+        "x": 5,
+        "y": 5
+      }
+    },
+    {
+      "starship_type": "MartianShipC",
+      "starship_quantity": {
+        "rows": 1,
+        "columns": 6
+      },
+      "separation_space": {
+        "x": 5,
+        "y": 5
+      }
+    },
+    {
+      "starship_type": "MartianShipD",
+      "starship_quantity": {
+        "rows": 1,
+        "columns": 2
+      },
+      "separation_space": {
+        "x": 5,
+        "y": 5
+      }
+    }
+  ]
+}
