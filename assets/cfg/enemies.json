@@ -1,4 +1,5 @@
 {
+  "velocity_enemies": 20,
   "MartianShipA": {
     "image": "assets/img/invaders_enemy_01.png",
     "animations": {

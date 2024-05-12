@@ -2,7 +2,7 @@ import json
 import time
 import pygame, esper
 
-from src.create.prefab_creator import create_enemy_starship, create_player_bullet, create_input_player, create_player_square, create_starship_enemies
+from src.create.prefab_creator import create_enemy_starship, create_flag, create_player_bullet, create_input_player, create_player_square, create_starship_enemies
 from src.create.prefab_creator_interface import TextAlignment, create_text
 from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_surface import CSurface
@@ -20,21 +20,28 @@ from src.engine.service_locator import ServiceLocator
 
 class PlayScene(Scene):
     def __init__(self, engine:'src.engine.game_engine.GameEngine') -> None:
-        self.start_time = pygame.time.get_ticks()      
-        self.pause = False
-        self.play_time = False
-        self.game_over = False
-        self.game_ready_deleted = False
-        self.game_over_released = False
+        
         with open("assets/cfg/player.json", encoding="utf-8") as player_file:
             self.player_cfg = json.load(player_file)   
         with open("assets/cfg/enemies.json", encoding="utf-8") as enemies_file:
             self.enemies_cfg = json.load(enemies_file)
         with open("assets/cfg/level_01.json", encoding="utf-8") as level_file:
             self.level_cfg = json.load(level_file)
+        with open("assets/cfg/window.json", encoding="utf-8") as level_file:
+            self.windows_cfg = json.load(level_file)
         super().__init__(engine)
+        self.level=1
 
     def do_create(self):
+
+        self.start_time = pygame.time.get_ticks()      
+        self.pause = False
+        self.play_time = False
+        self.game_over = False
+        self.game_ready_deleted = False
+        self.game_over_released = False
+        self.level_achieved=False
+
         self.player_entity=create_player_square(self.ecs_world, self.player_cfg)
         self.player_c_v=self.ecs_world.component_for_entity(self.player_entity, CVelocity)
         self.player_c_t=self.ecs_world.component_for_entity(self.player_entity, CTransform)
@@ -48,8 +55,8 @@ class PlayScene(Scene):
                                      CInputCommand("QUIT_TO_MENU", pygame.K_ESCAPE))
         
         create_input_player(self.ecs_world)
-        create_enemy_starship(self.ecs_world, self.level_cfg)
-        create_starship_enemies(self.ecs_world, self.enemies_cfg)
+        create_flag(self.ecs_world,pygame.Vector2(200,10))
+        create_text(self.ecs_world,"0"+str(self.level), 8, pygame.Color(255, 255, 255), pygame.Vector2(210, 15), TextAlignment.LEFT, 0)
         
         
     def do_action(self, action: CInputCommand):
@@ -65,12 +72,13 @@ class PlayScene(Scene):
                 self.player_c_v.vel.x += self.player_cfg['input_velocity']
             elif action.phase == CommandPhase.END:
                 self.player_c_v.vel.x -= self.player_cfg['input_velocity']
-        if action.name=="PLAYER_FIRE":
+        if action.name=="PLAYER_FIRE" and self.play_time:
             if action.phase == CommandPhase.START:
                 create_player_bullet(self.ecs_world, self.player_c_t.pos, self.player_c_s.surf.get_rect(), self.player_cfg["bullets"])
         if action.name=='PAUSE' and self.play_time:
-            if action.phase == CommandPhase.START:
+            if action.phase == CommandPhase.START:          
                 if not self.pause:  
+                    ServiceLocator.sounds_service.play(self.player_cfg["game_paused"])
                     self.pause_text=create_text(self.ecs_world, "PAUSED", 8, 
                                             pygame.Color(255, 0, 0 ), pygame.Vector2(128, 120), TextAlignment.CENTER, 0.5)
                 else:
@@ -78,13 +86,20 @@ class PlayScene(Scene):
                 self.pause = not self.pause
     
     def do_update(self,delta_time:float):
+
+        if(self.level_achieved):
+            self.level+=1
+            self.ecs_world.clear_database()
+            self.ecs_world._clear_dead_entities()
+            self.do_create()
+
         system_player_bullet_delete(self.ecs_world, self._game_engine.screen)
         self.ecs_world._clear_dead_entities()
         self.curret_time=pygame.time.get_ticks()
         self.play_time=self.curret_time-self.start_time>3500
         #self.game_over=self.curret_time-self.start_time>8000 #TODO - Cambiar esto a cuando haya colisión con el jugador
-        
-        
+        #self.level_achieved=self.curret_time-self.start_time>8000 #TODO - Cambiar esto a cuando se eliminen todos los enemigos
+
         system_blink(self.ecs_world,delta_time)
         if not self.pause:
             system_movement(self.ecs_world, delta_time)
@@ -94,6 +109,8 @@ class PlayScene(Scene):
             if self.play_time and not self.game_ready_deleted: 
                 self.game_ready_deleted=True
                 self.ecs_world.delete_entity(self.ready)
+                create_enemy_starship(self.ecs_world, self.level_cfg)
+                create_starship_enemies(self.ecs_world, self.enemies_cfg)
             if self.game_over:         
                 if not self.game_over_released:
                     create_text(self.ecs_world, "GAME OVER", 8, 

@@ -2,6 +2,7 @@ import esper
 import pygame
 
 from src.ecs.components.Tags.c_tag_enemy import CTagEnemy
+from src.ecs.components.Tags.c_tag_flag import CTagFlag
 from src.ecs.components.Tags.c_tag_player import CTagPlayer
 from src.ecs.components.Tags.c_tag_player_bullet import CTagPlayerBullet
 from src.ecs.components.Tags.c_tag_star import CTagStar
@@ -76,6 +77,14 @@ def create_logo(ecs_world:esper.World, window_json:dict, pos :pygame.Vector2) ->
 
         return logo_entity 
 
+def create_flag(ecs_world:esper.World, pos:pygame.Vector2) ->int:
+     
+        flag_sprite = ServiceLocator.images_service.get("assets/img/invaders_level_flag.png")
+        flag_entity=create_sprite(ecs_world, pos, pygame.Vector2(0,0), flag_sprite)
+        ecs_world.add_component(flag_entity,CTagFlag)
+        return flag_entity 
+
+
 def create_player_bullet(world: esper.World, player_pos: pygame.Vector2, player_size: pygame.Rect, player_bullet_cfg: dict):
     bullets_in_screen = world.get_component(CTagPlayerBullet)
     if len(bullets_in_screen) < player_bullet_cfg["max_bullets"]:
@@ -102,11 +111,11 @@ def create_enemy_starship(world: esper.World, level_data: dict):
     world.add_component(starship_entity, CEnemyStarship(level_data))
 
 
-def create_enemy(world:esper.World, enemy_starship_conf: dict, position: pygame.Vector2, distance_pivot: float):
+def create_enemy(world:esper.World, enemy_starship_conf: dict, position: pygame.Vector2, distance_pivot: float, velocity: int):
     starship_sprite = ServiceLocator.images_service.get(enemy_starship_conf['image'])
     size = starship_sprite.get_size()
     size = [size[0] / enemy_starship_conf['animations']["number_frames"], size[1]]
-    velocity = pygame.Vector2(20, 0)
+    velocity = pygame.Vector2(velocity, 0)
     starship_entity = create_sprite(world,position,velocity,starship_sprite)
     world.add_component(starship_entity, CAnimation(enemy_starship_conf['animations']))
     world.add_component(starship_entity, CTagEnemy(distance_pivot))
@@ -128,5 +137,5 @@ def create_starship_enemies(world: esper.World, enemies_config: dict):
                     if i == len(c_es.enemy_starship_data) - 1 and z > 0:
                         position_updated.x = position_updated.x + (size_x + column_starship.separation_space_x) * 2
                     distance_pivot = position_updated.x - row_starship[-1].position.x
-                    create_enemy(world, enemies_config[matrix_starship.enemy_starship_type],position_updated, distance_pivot)
+                    create_enemy(world, enemies_config[matrix_starship.enemy_starship_type],position_updated, distance_pivot, enemies_config['velocity_enemies'])
                 acum += 1
