@@ -14,13 +14,10 @@ def system_enemy_screen_bounce(world: esper.World, screen: pygame.Surface, level
     change_direction = False
     for entity, (c_transform, c_velocity, c_surface, c_enemy) in components:
         cuad_rect = CSurface.get_area_relative(c_surface.area, c_transform.pos)
-        if cuad_rect.left < 0 or cuad_rect.right > (screen_rect.width - level_cfg["border_space"]["right"]):
+        if cuad_rect.left < level_cfg["border_space"]["left"] or cuad_rect.right > (screen_rect.width - level_cfg["border_space"]["right"]):
             change_direction = True
             break
     for entity, (c_transform, c_velocity, c_surface, c_enemy) in components:
         cuad_rect = CSurface.get_area_relative(c_surface.area, c_transform.pos)
         if change_direction:
             c_velocity.vel.x *= -1
-            cuad_rect.clamp_ip(screen_rect)
-            c_transform.pos.x = cuad_rect.x
-        

@@ -7,6 +7,7 @@
     },
     "sound_intro":"assets/snd/game_start.ogg",
     "sound_over":"assets/snd/game_over.ogg",
+    "game_paused":"assets/snd/game_over.ogg",
     "bullets": {
         "max_bullets": 1,
         "size": {
