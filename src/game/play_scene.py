@@ -4,7 +4,7 @@ import time
 import pygame, esper
 
 from src.create.prefab_creator import create_enemy_starship, create_flag, create_player_bullet, create_input_player, create_player_square, create_starship_enemies
-from src.create.prefab_creator_interface import TextAlignment, create_text
+from src.create.prefab_creator_interface import TextAlignment, create_text, create_text_score
 from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_trasform import CTransform
@@ -54,6 +54,7 @@ class PlayScene(Scene):
         self.game_over_released = False
         self.level_achieved=False
         self.debug_mode = DebugView.NONE
+        self.score="00"
 
         self.player_entity=create_player_square(self.ecs_world, self.player_cfg)
         self.player_c_v=self.ecs_world.component_for_entity(self.player_entity, CVelocity)
@@ -70,7 +71,8 @@ class PlayScene(Scene):
         create_input_player(self.ecs_world)
         create_flag(self.ecs_world,pygame.Vector2(200,10))
         create_text(self.ecs_world,"0"+str(self.level), 8, pygame.Color(255, 255, 255), pygame.Vector2(210, 15), TextAlignment.LEFT, 0)
-        
+        create_text(self.ecs_world,"1UP", 8, pygame.Color(255, 0, 0 ), pygame.Vector2(18, 10), TextAlignment.LEFT, 0)
+        create_text_score(self.ecs_world,self.score, 8, pygame.Color(255, 255, 255), pygame.Vector2(58, 18), TextAlignment.RIGHT, 0)
         
     def do_action(self, action: CInputCommand):
         if action.name == "QUIT_TO_MENU":
@@ -116,7 +118,6 @@ class PlayScene(Scene):
         self.play_time=self.curret_time-self.start_time>3500
         #self.game_over=self.curret_time-self.start_time>8000 #TODO - Cambiar esto a cuando haya colisión con el jugador
         #self.level_achieved=self.curret_time-self.start_time>8000 #TODO - Cambiar esto a cuando se eliminen todos los enemigos
-
         system_blink(self.ecs_world,delta_time)
         if not self.pause:
             system_movement(self.ecs_world, delta_time)
@@ -127,6 +128,7 @@ class PlayScene(Scene):
             system_collision_bullet_enemy(self.ecs_world)   
             system_collision_bullet_player(self.ecs_world, self.player_cfg, self.explosion_cfg, self.player_cfg)
             if self.play_time and not self.game_ready_deleted: 
+                self.score=str("10")
                 self.game_ready_deleted=True
                 self.ecs_world.delete_entity(self.ready)
                 create_enemy_starship(self.ecs_world, self.level_cfg)
