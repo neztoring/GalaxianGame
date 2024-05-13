@@ -4,6 +4,7 @@ import pygame
 from src.ecs.components.Tags.c_tag_enemy import CTagEnemy
 from src.ecs.components.Tags.c_tag_flag import CTagFlag
 from src.ecs.components.Tags.c_tag_player import CTagPlayer
+from src.ecs.components.Tags.c_tag_enemy_bullet import CTagEnemyBullet
 from src.ecs.components.Tags.c_tag_player_bullet import CTagPlayerBullet
 from src.ecs.components.Tags.c_tag_star import CTagStar
 from src.ecs.components.c_animation import CAnimation
@@ -54,19 +55,13 @@ def create_input_player(world:esper.World):
     input_right=world.create_entity()
     input_pause=world.create_entity()
     input_player_fire=world.create_entity()
+    input_change_debug_mode=world.create_entity()
 
     world.add_component(input_left,CInputCommand("PLAYER_LEFT",pygame.K_LEFT))
     world.add_component(input_right,CInputCommand("PLAYER_RIGHT",pygame.K_RIGHT))
     world.add_component(input_player_fire,CInputCommand("PLAYER_FIRE",pygame.K_z))
     world.add_component(input_pause,CInputCommand("PAUSE",pygame.K_p))
-
-def create_sprite(world:esper.World,pos:pygame.Vector2,vel:pygame.Vector2,
-                  surface:pygame.Surface)->int:
-        sprite_entity =world.create_entity()
-        world.add_component(sprite_entity,CTransform(pos))
-        world.add_component(sprite_entity,CVelocity(vel))
-        world.add_component(sprite_entity,CSurface.from_surface(surface))
-        return sprite_entity
+    world.add_component(input_change_debug_mode,CInputCommand("DEBUG",pygame.K_d))
 
 def create_logo(ecs_world:esper.World, window_json:dict, pos :pygame.Vector2) ->int:
      
@@ -84,6 +79,27 @@ def create_flag(ecs_world:esper.World, pos:pygame.Vector2) ->int:
         ecs_world.add_component(flag_entity,CTagFlag)
         return flag_entity 
 
+def create_enemy_bullet(world: esper.World, enemy_pos: pygame.Vector2, player_size: pygame.Rect, enemy_bullet_cfg: dict):
+    bullets_in_screen = world.get_component(CTagEnemyBullet)
+
+    if len(bullets_in_screen) < 1:
+        size_bullet_cfg = enemy_bullet_cfg["size"]
+        color_bullet_cfg = enemy_bullet_cfg["color"]
+        velocity_bullet_cfg = enemy_bullet_cfg["velocity"]
+
+        x_pos = enemy_pos.x + (player_size.w / 2)
+
+        bullet_size = pygame.Vector2(size_bullet_cfg["w"], size_bullet_cfg["h"])
+        bullet_color = pygame.Color(color_bullet_cfg["r"], color_bullet_cfg["g"], color_bullet_cfg["b"])
+        bullet_position = pygame.Vector2(x_pos, enemy_pos.y)
+        bullet_velocity = pygame.Vector2(velocity_bullet_cfg["x"], velocity_bullet_cfg["y"])
+
+        bullet_entity = world.create_entity()
+        world.add_component(bullet_entity, CSurface(size=bullet_size, color=bullet_color, blink_rate=0))
+        world.add_component(bullet_entity, CTransform(pos=bullet_position))
+        world.add_component(bullet_entity, CVelocity(vel=bullet_velocity))
+        world.add_component(bullet_entity, CTagEnemyBullet())
+
 
 def create_player_bullet(world: esper.World, player_pos: pygame.Vector2, player_size: pygame.Rect, player_bullet_cfg: dict):
     bullets_in_screen = world.get_component(CTagPlayerBullet)
@@ -98,13 +114,15 @@ def create_player_bullet(world: esper.World, player_pos: pygame.Vector2, player_
         bullet_size = pygame.Vector2(size_bullet_cfg["w"], size_bullet_cfg["h"])
         bullet_color = pygame.Color(color_bullet_cfg["r"], color_bullet_cfg["g"], color_bullet_cfg["b"])
         bullet_position = pygame.Vector2(x_pos, player_pos.y)
-        bullet_velocity = pygame.Vector2(velocity_bullet_cfg["x"], velocity_bullet_cfg["y"]) #todo que venga del archivo
+        bullet_velocity = pygame.Vector2(velocity_bullet_cfg["x"], velocity_bullet_cfg["y"])
 
         bullet_entity = world.create_entity()
         world.add_component(bullet_entity, CSurface(size=bullet_size, color=bullet_color, blink_rate=0))
         world.add_component(bullet_entity, CTransform(pos=bullet_position))
         world.add_component(bullet_entity, CVelocity(vel=bullet_velocity))
         world.add_component(bullet_entity, CTagPlayerBullet())
+
+        ServiceLocator.sounds_service.play(player_bullet_cfg["sound"])
         
 def create_enemy_starship(world: esper.World, level_data: dict):
     starship_entity = world.create_entity()
@@ -139,3 +157,12 @@ def create_starship_enemies(world: esper.World, enemies_config: dict):
                     distance_pivot = position_updated.x - row_starship[-1].position.x
                     create_enemy(world, enemies_config[matrix_starship.enemy_starship_type],position_updated, distance_pivot, enemies_config['velocity_enemies'])
                 acum += 1
+
+
+def explode_animation(world: esper.World, explosion_info: dict, last_position: pygame.Vector2, entity: int):
+    explode_surface = ServiceLocator.images_service.get(explosion_info["image"])
+    pos = last_position
+    vel = pygame.Vector2(0,0)
+    explode_entity = create_sprite(world, pos, vel, explode_surface)
+    world.add_component(explode_entity, CAnimation(explosion_info["animations"], True, entity))
+    ServiceLocator.sounds_service.play(explosion_info["sound"])
