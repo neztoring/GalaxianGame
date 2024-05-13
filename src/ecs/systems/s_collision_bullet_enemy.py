@@ -34,9 +34,6 @@ def system_collision_bullet_enemy(world: esper.World):
                     c_c.text=str(c_ts.score)
                     c_s.surf=CSurface.from_text(c_c.text, font, c_s.color, c_s.blink_rate)
                     c_s.area = c_s.surf.surf.get_rect()
-
-                    print(c_t.pos, " ", c_s.area.width)
-
                     origin = pygame.Vector2(0, 0)
                     origin.x -= c_s.area.width-old_area
                     c_t.pos=c_t.pos + origin
