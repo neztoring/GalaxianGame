@@ -136,7 +136,7 @@ def create_enemy(world:esper.World, enemy_starship_conf: dict, position: pygame.
     velocity = pygame.Vector2(velocity, 0)
     starship_entity = create_sprite(world,position,velocity,starship_sprite)
     world.add_component(starship_entity, CAnimation(enemy_starship_conf['animations']))
-    world.add_component(starship_entity, CTagEnemy(distance_pivot))
+    world.add_component(starship_entity, CTagEnemy(distance_pivot, enemy_starship_conf['score']))
     
 def create_starship_enemies(world: esper.World, enemies_config: dict):
     components = world.get_component(CEnemyStarship)
