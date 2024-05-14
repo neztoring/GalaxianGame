@@ -8,7 +8,9 @@ def _calculate_time_to_fire(current_time: float, last_fire: float, time_fire: in
     return current_time - last_fire > time_fire
 
 def system_enemy_fire(world: esper.World, delta_time: float, bullet_conf: dict):
-    time_fire = bullet_conf["time_fire"]
+    min_time_fire = bullet_conf["min_time_fire"]
+    max_time_fire = bullet_conf["max_time_fire"]
+    time_fire = random.uniform(min_time_fire, max_time_fire)
     components_enemy = world.get_components(CSurface, CTransform, CTagEnemy)
 
     list_enemies = []
