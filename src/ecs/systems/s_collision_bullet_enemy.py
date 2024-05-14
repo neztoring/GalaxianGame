@@ -1,6 +1,7 @@
 import pygame
 import esper
 
+from src.create.prefab_creator import explode_animation
 from src.ecs.components.Tags.c_tag_player_bullet import CTagPlayerBullet
 from src.ecs.components.Tags.c_tag_score import CTagScore
 from src.ecs.components.c_changing_text import CChangingText
@@ -9,7 +10,7 @@ from src.ecs.components.c_trasform import CTransform
 from src.ecs.components.Tags.c_tag_enemy import CTagEnemy
 from src.engine.service_locator import ServiceLocator
 
-def system_collision_bullet_enemy(world: esper.World):
+def system_collision_bullet_enemy(world: esper.World, explosion_conf: dict):
 
     enemies_components = world.get_components(CSurface, CTransform, CTagEnemy)
     bullet_components = world.get_components(CSurface, CTransform, CTagPlayerBullet)
@@ -37,6 +38,6 @@ def system_collision_bullet_enemy(world: esper.World):
                     origin = pygame.Vector2(0, 0)
                     origin.x -= c_s.area.width-old_area
                     c_t.pos=c_t.pos + origin
-
+                explode_animation(world, explosion_conf, e_t.pos, enemy_entity)
                 world.delete_entity(bullet_entity)
                 world.delete_entity(enemy_entity)

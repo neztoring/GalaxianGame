@@ -124,8 +124,8 @@ class PlayScene(Scene):
             system_enemy_screen_bounce(self.ecs_world, self._game_engine.screen, self.level_cfg)
             system_screen_player(self.ecs_world, self._game_engine.screen) 
             system_enemy_fire(self.ecs_world, delta_time ,self.level_cfg["enemy_bullet"])
-            system_collision_bullet_enemy(self.ecs_world)   
-            system_collision_bullet_player(self.ecs_world, self.player_cfg, self.explosion_cfg, self.player_cfg)
+            system_collision_bullet_enemy(self.ecs_world, self.explosion_cfg["enemy"])   
+            system_collision_bullet_player(self.ecs_world, self.player_cfg, self.explosion_cfg["player"], delta_time)
             if self.play_time and not self.game_ready_deleted: 
                 self.game_ready_deleted=True
                 self.ecs_world.delete_entity(self.ready)

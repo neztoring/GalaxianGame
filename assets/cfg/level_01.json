@@ -54,7 +54,8 @@
     }
   ],
   "enemy_bullet": {
-    "time_fire": 3,
+    "min_time_fire": 0.5,
+    "max_time_fire": 1.5,
     "size": {
         "w": 1,
         "h": 3
