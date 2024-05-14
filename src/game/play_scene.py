@@ -54,7 +54,6 @@ class PlayScene(Scene):
         self.game_over_released = False
         self.level_achieved=False
         self.debug_mode = DebugView.NONE
-        self.score="00"
 
         self.player_entity=create_player_square(self.ecs_world, self.player_cfg)
         self.player_c_v=self.ecs_world.component_for_entity(self.player_entity, CVelocity)
@@ -72,7 +71,7 @@ class PlayScene(Scene):
         create_flag(self.ecs_world,pygame.Vector2(200,10))
         create_text(self.ecs_world,"0"+str(self.level), 8, pygame.Color(255, 255, 255), pygame.Vector2(210, 15), TextAlignment.LEFT, 0)
         create_text(self.ecs_world,"1UP", 8, pygame.Color(255, 0, 0 ), pygame.Vector2(18, 10), TextAlignment.LEFT, 0)
-        create_text_score(self.ecs_world,self.score, 8, pygame.Color(255, 255, 255), pygame.Vector2(58, 18), TextAlignment.RIGHT, 0)
+        create_text_score(self.ecs_world, "00" , 8, pygame.Color(255, 255, 255), pygame.Vector2(58, 18), TextAlignment.RIGHT, 0)
         
     def do_action(self, action: CInputCommand):
         if action.name == "QUIT_TO_MENU":
@@ -128,7 +127,6 @@ class PlayScene(Scene):
             system_collision_bullet_enemy(self.ecs_world)   
             system_collision_bullet_player(self.ecs_world, self.player_cfg, self.explosion_cfg, self.player_cfg)
             if self.play_time and not self.game_ready_deleted: 
-                self.score=str("10")
                 self.game_ready_deleted=True
                 self.ecs_world.delete_entity(self.ready)
                 create_enemy_starship(self.ecs_world, self.level_cfg)
