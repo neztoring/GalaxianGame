@@ -111,7 +111,7 @@ class PlayScene(Scene):
     def do_update(self,delta_time:float):
         
         self.current_time+=delta_time 
-        
+
         if(self.level_state.state==LevelState.LEVEL_ACHIEVED):
             self.level+=1
             self.clean()
@@ -120,13 +120,12 @@ class PlayScene(Scene):
         self.ecs_world._clear_dead_entities()      
         system_level_state(self.ecs_world, self.level_entity, self.current_time, self.player_cfg, self.level_cfg, self.enemies_cfg, self.ready)
         system_blink(self.ecs_world,delta_time)
+        system_bullet_delete(self.ecs_world, self._game_engine.screen, self.player_cfg)
         
         if not self.pause:
             system_movement(self.ecs_world, delta_time)
             system_animation(self.ecs_world, delta_time)
-            system_bullet_delete(self.ecs_world, self._game_engine.screen, self.player_cfg)
             system_player_state(self.ecs_world, self.player_cfg)
-            
             system_enemy_screen_bounce(self.ecs_world, self._game_engine.screen, self.level_cfg)
             system_screen_player(self.ecs_world, self._game_engine.screen, self.level_cfg) 
             system_enemy_fire(self.ecs_world, delta_time ,self.level_cfg["enemy_bullet"])
