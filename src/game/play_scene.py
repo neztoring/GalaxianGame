@@ -1,10 +1,11 @@
 from enum import Enum
 import json
-import time
-import pygame, esper
+import pygame
 
-from src.create.prefab_creator import create_enemy_starship, create_flag, create_player_bullet, create_input_player, create_player_square, create_starship_enemies
+from src.create.prefab_creator import create_enemy_starship, create_flag, create_input_player, create_player_square, create_starship_enemies
 from src.create.prefab_creator_interface import TextAlignment, create_level_state, create_text, create_text_score
+from src.create.prefab_creator import create_enemy_starship, create_flag, fire_player_bullet, create_input_player, create_player_square, create_starship_enemies
+from src.create.prefab_creator_interface import TextAlignment, create_text, create_text_score
 from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_level_state import CLevelState, LevelState
 from src.ecs.components.c_surface import CSurface
@@ -18,6 +19,8 @@ from src.ecs.systems.s_enemy_fire import system_enemy_fire
 from src.ecs.systems.s_level_state import system_level_state
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_bullet_delete import system_bullet_delete
+from src.ecs.systems.s_player_bullet_state import system_player_bullet_state
+from src.ecs.systems.s_player_state import system_player_state
 from src.ecs.systems.s_rendering import system_rendering
 from src.ecs.systems.s_rendering_debug import system_rendering_debug
 from src.ecs.systems.s_screen_bounce import system_enemy_screen_bounce
@@ -84,9 +87,11 @@ class PlayScene(Scene):
                 self.player_c_v.vel.x += self.player_cfg['input_velocity']
             elif action.phase == CommandPhase.END:
                 self.player_c_v.vel.x -= self.player_cfg['input_velocity']
-        if action.name=="PLAYER_FIRE" and self.level_state.state==LevelState.PLAY_TIME and action.phase == CommandPhase.START:
-                create_player_bullet(self.ecs_world, self.player_c_t.pos, self.player_c_s.surf.get_rect(), self.player_cfg["bullets"])
-        if action.name=="PLAYER_FIRE" and self.level_state.state==LevelState.GAME_OVER_DONE and action.phase == CommandPhase.START:    
+
+        if action.name=="PLAYER_BEHAVIOR" and self.level_state.state==LevelState.PLAY_TIME and action.phase == CommandPhase.START:
+            if self.ecs_world.entity_exists(self.player_entity):
+                fire_player_bullet(self.ecs_world, self.player_cfg["bullets"])
+        if action.name=="PLAYER_BEHAVIOR" and self.level_state.state==LevelState.GAME_OVER_DONE and action.phase == CommandPhase.START:    
             self.switch_scene("MENU_SCENE")
         if action.name=='PAUSE' and self.level_state.state==LevelState.READY:
             if action.phase == CommandPhase.START:          
@@ -113,30 +118,21 @@ class PlayScene(Scene):
             self.do_create()
 
         self.ecs_world._clear_dead_entities()      
-        system_level_state(self.ecs_world, self.level_entity, self.current_time, self.player_cfg)
+        system_level_state(self.ecs_world, self.level_entity, self.current_time, self.player_cfg, self.level_cfg, self.enemies_cfg, self.ready)
         system_blink(self.ecs_world,delta_time)
         
         if not self.pause:
             system_movement(self.ecs_world, delta_time)
             system_animation(self.ecs_world, delta_time)
-            system_bullet_delete(self.ecs_world, self._game_engine.screen)
+            system_bullet_delete(self.ecs_world, self._game_engine.screen, self.player_cfg)
+            system_player_state(self.ecs_world, self.player_cfg)
+            
             system_enemy_screen_bounce(self.ecs_world, self._game_engine.screen, self.level_cfg)
             system_screen_player(self.ecs_world, self._game_engine.screen, self.level_cfg) 
             system_enemy_fire(self.ecs_world, delta_time ,self.level_cfg["enemy_bullet"])
-            system_collision_bullet_enemy(self.ecs_world, self.explosion_cfg["enemy"])   
+            system_collision_bullet_enemy(self.ecs_world, self.explosion_cfg["enemy"], self.player_c_t.pos, self.player_c_s.area, self.player_cfg)   
             system_collision_bullet_player(self.ecs_world, self.player_cfg, self.explosion_cfg["player"], delta_time)
-
-            if self.level_state.state==LevelState.READY_DONE: 
-                self.ecs_world.delete_entity(self.ready)
-                create_enemy_starship(self.ecs_world, self.level_cfg)
-                create_starship_enemies(self.ecs_world, self.enemies_cfg)
-                self.level_state.state=LevelState.PLAY_TIME
-            if self.level_state.state==LevelState.GAME_OVER:          
-                create_text(self.ecs_world, "GAME OVER", 8, 
-                            pygame.Color(255, 255, 255), pygame.Vector2(128, 120), TextAlignment.CENTER, 0)
-                ServiceLocator.sounds_service.play(self.player_cfg["sound_over"])
-                self.level_state.state=LevelState.GAME_OVER_DONE
-                
+            system_player_bullet_state(self.ecs_world, self.player_cfg, self.player_c_t.pos, self.player_c_s.surf.get_rect())      
     
     def do_draw(self, screen):
         if self.debug_mode == DebugView.RECTS:

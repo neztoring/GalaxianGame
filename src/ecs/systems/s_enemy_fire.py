@@ -28,6 +28,6 @@ def system_enemy_fire(world: esper.World, delta_time: float, bullet_conf: dict):
             if _calculate_time_to_fire(c_e.current_time, c_e.time_last_fire, time_fire):
                 c_e.time_last_fire = c_e.current_time
                 if enemy_entity == random_starship:
-                    create_enemy_bullet(world, c_t.pos, c_s.surf.get_rect(), bullet_conf)
+                    create_enemy_bullet(world, c_t.pos, c_s.area, bullet_conf)
                     return
 
