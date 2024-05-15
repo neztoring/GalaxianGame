@@ -120,19 +120,19 @@ class PlayScene(Scene):
         self.ecs_world._clear_dead_entities()      
         system_level_state(self.ecs_world, self.level_entity, self.current_time, self.player_cfg, self.level_cfg, self.enemies_cfg, self.ready)
         system_blink(self.ecs_world,delta_time)
-        system_bullet_delete(self.ecs_world, self._game_engine.screen, self.player_cfg)
-        
+         
         if not self.pause:
             system_movement(self.ecs_world, delta_time)
             system_animation(self.ecs_world, delta_time)
+            system_bullet_delete(self.ecs_world, self._game_engine.screen, self.player_cfg)
             system_player_state(self.ecs_world, self.player_cfg)
             system_enemy_screen_bounce(self.ecs_world, self._game_engine.screen, self.level_cfg)
             system_screen_player(self.ecs_world, self._game_engine.screen, self.level_cfg) 
             system_enemy_fire(self.ecs_world, delta_time ,self.level_cfg["enemy_bullet"])
             system_collision_bullet_enemy(self.ecs_world, self.explosion_cfg["enemy"], self.player_c_t.pos, self.player_c_s.area, self.player_cfg)   
             system_collision_bullet_player(self.ecs_world, self.player_cfg, self.explosion_cfg["player"], delta_time)
-            system_player_bullet_state(self.ecs_world, self.player_cfg, self.player_c_t.pos, self.player_c_s.surf.get_rect())      
-    
+            system_player_bullet_state(self.ecs_world, self.player_cfg, self.player_c_t.pos, self.player_c_s.surf.get_rect())     
+             
     def do_draw(self, screen):
         if self.debug_mode == DebugView.RECTS:
             system_rendering_debug(self.ecs_world, screen)
