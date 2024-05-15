@@ -39,8 +39,7 @@ def system_collision_bullet_player(world: esper.World, player_conf: dict, explos
                 old_p_t = copy.deepcopy(p_t)
                 p_t.pos = pygame.Vector2(player_conf['position']['x'] - size[0]/2, old_p_t.pos.y)
                 player_sprite = ServiceLocator.images_service.get(player_conf["image"])
-                world.remove_component(player_entity, CSurface)
-                world.add_component(player_entity, CSurface.from_surface(player_sprite))
+                world.delete_entity(player_entity)
             else:
                 p_e.time_recover += delta_time
                 

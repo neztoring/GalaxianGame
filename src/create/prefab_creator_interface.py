@@ -4,6 +4,7 @@ import esper
 
 from src.ecs.components.Tags.c_tag_score import CTagScore
 from src.ecs.components.c_changing_text import CChangingText
+from src.ecs.components.c_level_state import CLevelState
 from src.ecs.components.c_surface import CSurface
 
 from src.ecs.components.c_trasform import CTransform
@@ -39,3 +40,8 @@ def create_text_score(world:esper.World, txt:str, size:int,
     world.add_component(text_entity, CChangingText(txt, ServiceLocator.fonts_service.get("assets/fnt/PressStart2P.ttf", size)))
     world.add_component(text_entity, CTagScore(int(txt)))
     return text_entity
+
+def create_level_state(world:esper.World) -> int:
+    level_entity = world.create_entity()
+    world.add_component(level_entity, CLevelState())
+    return level_entity
