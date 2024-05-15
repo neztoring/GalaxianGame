@@ -8,10 +8,11 @@ from src.ecs.components.Tags.c_tag_enemy_bullet import CTagEnemyBullet
 from src.ecs.components.Tags.c_tag_player_bullet import CTagPlayerBullet
 from src.ecs.components.Tags.c_tag_star import CTagStar
 from src.ecs.components.c_animation import CAnimation
-from src.ecs.components.c_blink import CBlink
-from src.ecs.components.c_enemy_starship import CEnemyStarship, EnemyStarshipData
+from src.ecs.components.c_enemy_starship import CEnemyStarship
 from src.ecs.components.c_input_command import CInputCommand
 from src.ecs.components.c_move_to import CMoveTo
+from src.ecs.components.c_player_bullet_state import CPlayerBulletState, PlayerBulletState
+from src.ecs.components.c_player_state import CPlayerState
 from src.ecs.components.c_star_spawner import CStarSpawner
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_trasform import CTransform
@@ -48,18 +49,20 @@ def create_player_square(world:esper.World, player_info:dict)->int:
     vel=pygame.Vector2(0,0)
     player_entity=create_sprite(world, pos,vel, player_sprite)
     world.add_component(player_entity,CTagPlayer())
+    world.add_component(player_entity, CPlayerState())
+    spawn_player_bullet(world, pos, player_sprite.get_rect(), player_info["bullets"])
     return player_entity
 
 def create_input_player(world:esper.World):
     input_left=world.create_entity()
     input_right=world.create_entity()
     input_pause=world.create_entity()
-    input_player_fire=world.create_entity()
+    input_player_behavior=world.create_entity()
     input_change_debug_mode=world.create_entity()
 
     world.add_component(input_left,CInputCommand("PLAYER_LEFT",pygame.K_LEFT))
     world.add_component(input_right,CInputCommand("PLAYER_RIGHT",pygame.K_RIGHT))
-    world.add_component(input_player_fire,CInputCommand("PLAYER_FIRE",pygame.K_z))
+    world.add_component(input_player_behavior,CInputCommand("PLAYER_BEHAVIOR",pygame.K_z))
     world.add_component(input_pause,CInputCommand("PAUSE",pygame.K_p))
     world.add_component(input_change_debug_mode,CInputCommand("DEBUG",pygame.K_d))
 
@@ -81,17 +84,18 @@ def create_flag(ecs_world:esper.World, pos:pygame.Vector2) ->int:
 
 def create_enemy_bullet(world: esper.World, enemy_pos: pygame.Vector2, player_size: pygame.Rect, enemy_bullet_cfg: dict):
     bullets_in_screen = world.get_component(CTagEnemyBullet)
+    enemy_pos_copy = enemy_pos.copy()
 
     if len(bullets_in_screen) < 1:
         size_bullet_cfg = enemy_bullet_cfg["size"]
         color_bullet_cfg = enemy_bullet_cfg["color"]
         velocity_bullet_cfg = enemy_bullet_cfg["velocity"]
 
-        x_pos = enemy_pos.x + (player_size.w / 2)
+        x_pos = enemy_pos_copy.x + (player_size.w / 2)
 
         bullet_size = pygame.Vector2(size_bullet_cfg["w"], size_bullet_cfg["h"])
         bullet_color = pygame.Color(color_bullet_cfg["r"], color_bullet_cfg["g"], color_bullet_cfg["b"])
-        bullet_position = pygame.Vector2(x_pos, enemy_pos.y)
+        bullet_position = pygame.Vector2(x_pos, enemy_pos_copy.y)
         bullet_velocity = pygame.Vector2(velocity_bullet_cfg["x"], velocity_bullet_cfg["y"])
 
         bullet_entity = world.create_entity()
@@ -100,28 +104,32 @@ def create_enemy_bullet(world: esper.World, enemy_pos: pygame.Vector2, player_si
         world.add_component(bullet_entity, CVelocity(vel=bullet_velocity))
         world.add_component(bullet_entity, CTagEnemyBullet())
 
-
-def create_player_bullet(world: esper.World, player_pos: pygame.Vector2, player_size: pygame.Rect, player_bullet_cfg: dict):
+def spawn_player_bullet(world: esper.World, player_pos: pygame.Vector2, player_size: pygame.Rect, player_bullet_cfg: dict) -> int:
+    world._clear_dead_entities()
     bullets_in_screen = world.get_component(CTagPlayerBullet)
-    if len(bullets_in_screen) < player_bullet_cfg["max_bullets"]:
+    if len(bullets_in_screen) < 1:
+        bullet_entity = world.create_entity()
 
         size_bullet_cfg = player_bullet_cfg["size"]
         color_bullet_cfg = player_bullet_cfg["color"]
-        velocity_bullet_cfg = player_bullet_cfg["velocity"]
-
-        x_pos = player_pos.x + (player_size.w / 2)
+        x_pos = round(player_pos.x + (player_size.w / 2)) -1
 
         bullet_size = pygame.Vector2(size_bullet_cfg["w"], size_bullet_cfg["h"])
         bullet_color = pygame.Color(color_bullet_cfg["r"], color_bullet_cfg["g"], color_bullet_cfg["b"])
-        bullet_position = pygame.Vector2(x_pos, player_pos.y)
-        bullet_velocity = pygame.Vector2(velocity_bullet_cfg["x"], velocity_bullet_cfg["y"])
+        bullet_position = pygame.Vector2(x_pos, player_pos.y-size_bullet_cfg["h"]+ 1)
 
-        bullet_entity = world.create_entity()
         world.add_component(bullet_entity, CSurface(size=bullet_size, color=bullet_color, blink_rate=0))
         world.add_component(bullet_entity, CTransform(pos=bullet_position))
-        world.add_component(bullet_entity, CVelocity(vel=bullet_velocity))
         world.add_component(bullet_entity, CTagPlayerBullet())
+        world.add_component(bullet_entity, CVelocity(vel=pygame.Vector2(0,0)))
+        world.add_component(bullet_entity, CPlayerBulletState())
+        
 
+def fire_player_bullet(world: esper.World, player_bullet_cfg: dict):
+    bullets_in_screen = world.get_component(CPlayerBulletState)
+    if len(bullets_in_screen) > 0:
+        (_, c_pbst) = bullets_in_screen[0]
+        c_pbst.state = PlayerBulletState.FIRED
         ServiceLocator.sounds_service.play(player_bullet_cfg["sound"])
         
 def create_enemy_starship(world: esper.World, level_data: dict):
@@ -161,8 +169,12 @@ def create_starship_enemies(world: esper.World, enemies_config: dict):
 
 def explode_animation(world: esper.World, explosion_info: dict, last_position: pygame.Vector2, entity: int):
     explode_surface = ServiceLocator.images_service.get(explosion_info["image"])
-    pos = last_position
+    pos = last_position.copy()
     vel = pygame.Vector2(0,0)
     explode_entity = create_sprite(world, pos, vel, explode_surface)
     world.add_component(explode_entity, CAnimation(explosion_info["animations"], True, entity))
+
+    c_surf = world.component_for_entity(explode_entity, CSurface)
+    c_surf.area.w = explode_surface.get_width() / explosion_info["animations"]["number_frames"]
+
     ServiceLocator.sounds_service.play(explosion_info["sound"])
