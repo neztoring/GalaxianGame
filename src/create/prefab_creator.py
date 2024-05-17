@@ -129,8 +129,10 @@ def fire_player_bullet(world: esper.World, player_bullet_cfg: dict):
     bullets_in_screen = world.get_component(CPlayerBulletState)
     if len(bullets_in_screen) > 0:
         (_, c_pbst) = bullets_in_screen[0]
+        if c_pbst.state != PlayerBulletState.FIRED:
+            ServiceLocator.sounds_service.play(player_bullet_cfg["sound"])
         c_pbst.state = PlayerBulletState.FIRED
-        ServiceLocator.sounds_service.play(player_bullet_cfg["sound"])
+        
         
 def create_enemy_starship(world: esper.World, level_data: dict):
     starship_entity = world.create_entity()

@@ -3,8 +3,8 @@ import json
 import pygame
 
 
-from src.create.prefab_creator import create_enemy_starship, create_flag, create_star_spawner, fire_player_bullet, create_input_player, create_player_square, create_starship_enemies
-from src.create.prefab_creator_interface import TextAlignment, create_text, create_text_score
+from src.create.prefab_creator import create_flag, create_star_spawner, fire_player_bullet, create_input_player, create_player_square, create_starship_enemies
+from src.create.prefab_creator_interface import TextAlignment, create_level_state, create_text, create_text_score
 from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_level_state import CLevelState, LevelState
 from src.ecs.components.c_surface import CSurface
@@ -92,7 +92,7 @@ class PlayScene(Scene):
             elif action.phase == CommandPhase.END:
                 self.player_c_v.vel.x -= self.player_cfg['input_velocity']
 
-        if action.name=="PLAYER_BEHAVIOR" and self.level_state.state==LevelState.PLAY_TIME and action.phase == CommandPhase.START:
+        if action.name=="PLAYER_BEHAVIOR" and self.level_state.state==LevelState.PLAY_TIME and action.phase == CommandPhase.START and not self.pause:
             if self.ecs_world.entity_exists(self.player_entity):
                 fire_player_bullet(self.ecs_world, self.player_cfg["bullets"])
         if action.name=="PLAYER_BEHAVIOR" and self.level_state.state==LevelState.GAME_OVER_DONE and action.phase == CommandPhase.START:    
