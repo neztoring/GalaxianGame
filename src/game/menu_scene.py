@@ -14,7 +14,7 @@ from src.ecs.systems.s_movement_to import system_movement_to
 from src.ecs.systems.s_star_spawner import system_star_spawner
 from src.engine.scenes.scene import Scene
 from src.create.prefab_creator_interface import TextAlignment, create_text
-from src.ecs.components.c_input_command import CInputCommand 
+from src.ecs.components.c_input_command import CInputCommand, CommandPhase 
 
 class MenuScene(Scene):
 
@@ -59,7 +59,7 @@ class MenuScene(Scene):
         create_star_spawner(self.ecs_world,self.starfield_cfg,self.window_cfg['size']['w'])
 
     def do_action(self, action: CInputCommand):
-        if action.name == "START_GAME":
+        if action.name == "START_GAME" and action.phase == CommandPhase.START:
             self.switch_scene("PLAY_SCENE")
         
     
