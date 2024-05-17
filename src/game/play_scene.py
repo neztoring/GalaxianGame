@@ -93,7 +93,7 @@ class PlayScene(Scene):
                 fire_player_bullet(self.ecs_world, self.player_cfg["bullets"])
         if action.name=="PLAYER_BEHAVIOR" and self.level_state.state==LevelState.GAME_OVER_DONE and action.phase == CommandPhase.START:    
             self.switch_scene("MENU_SCENE")
-        if action.name=='PAUSE' and self.level_state.state==LevelState.READY:
+        if action.name=='PAUSE' and self.level_state.state==LevelState.PLAY_TIME:
             if action.phase == CommandPhase.START:          
                 if not self.pause:  
                     ServiceLocator.sounds_service.play(self.player_cfg["game_paused"])
