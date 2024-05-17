@@ -2,7 +2,7 @@ from enum import Enum
 import json
 import pygame
 
-from src.create.prefab_creator import create_enemy_starship, create_flag, fire_player_bullet, create_input_player, create_player_square, create_starship_enemies
+from src.create.prefab_creator import create_enemy_starship, create_flag, create_star_spawner, fire_player_bullet, create_input_player, create_player_square, create_starship_enemies
 from src.create.prefab_creator_interface import TextAlignment, create_text, create_text_score
 from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_surface import CSurface
@@ -15,12 +15,14 @@ from src.ecs.systems.s_collision_bullet_player import system_collision_bullet_pl
 from src.ecs.systems.s_enemy_fire import system_enemy_fire
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_bullet_delete import system_bullet_delete
+from src.ecs.systems.s_movement_star import system_movement_star
 from src.ecs.systems.s_player_bullet_state import system_player_bullet_state
 from src.ecs.systems.s_player_state import system_player_state
 from src.ecs.systems.s_rendering import system_rendering
 from src.ecs.systems.s_rendering_debug import system_rendering_debug
 from src.ecs.systems.s_screen_bounce import system_enemy_screen_bounce
 from src.ecs.systems.s_screen_player import system_screen_player
+from src.ecs.systems.s_star_spawner import system_star_spawner
 from src.engine.scenes.scene import Scene
 import src.engine.game_engine
 from src.engine.service_locator import ServiceLocator
@@ -42,6 +44,8 @@ class PlayScene(Scene):
             self.windows_cfg = json.load(level_file)
         with open("assets/cfg/explosion.json", encoding="utf-8") as explosion_file:
             self.explosion_cfg = json.load(explosion_file)
+        with open("assets/cfg/starfield.json", encoding="utf-8") as window_file:
+            self.starfield_cfg = json.load(window_file )      
         super().__init__(engine)
         self.level=1
 
@@ -66,6 +70,7 @@ class PlayScene(Scene):
         self.ecs_world.add_component(quit_to_menu_action,
                                      CInputCommand("QUIT_TO_MENU", pygame.K_ESCAPE))
         
+        create_star_spawner(self.ecs_world,self.starfield_cfg,self.windows_cfg['size']['w'])
         create_input_player(self.ecs_world)
         create_flag(self.ecs_world,pygame.Vector2(200,10))
         create_text(self.ecs_world,"0"+str(self.level), 8, pygame.Color(255, 255, 255), pygame.Vector2(210, 15), TextAlignment.LEFT, 0)
@@ -106,6 +111,9 @@ class PlayScene(Scene):
                 self.debug_mode = DebugView.NONE
     
     def do_update(self,delta_time:float):
+
+        system_star_spawner(self.ecs_world)
+        system_movement_star(self.ecs_world,delta_time,self.windows_cfg['size']['h'], self.starfield_cfg["vertical_speed"]["min"],self.starfield_cfg["vertical_speed"]["max"])
 
         if(self.level_achieved):
             self.level+=1
