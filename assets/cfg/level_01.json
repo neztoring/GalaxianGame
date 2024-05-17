@@ -1,5 +1,9 @@
 {
   "border_space": {
+    "left": 20,
+    "right": 20
+  },
+  "border_space_player": {
     "left": 15,
     "right": 15
   },

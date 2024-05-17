@@ -7,8 +7,9 @@ from src.ecs.components.Tags.c_tag_player import CTagPlayer
 from src.ecs.components.c_player_state import CPlayerState, PlayerState
 from src.ecs.components.c_surface import CSurface
 from src.ecs.components.c_trasform import CTransform
+from src.engine.service_locator import ServiceLocator
 
-def system_collision_bullet_player(world: esper.World, explosion_conf: dict, delta_time: float):
+def system_collision_bullet_player(world: esper.World, player_conf: dict,explosion_conf: dict, delta_time: float):
 
     player_components = world.get_components(CSurface, CTransform, CTagPlayer, CPlayerState)
     bullet_components = world.get_components(CSurface, CTransform, CTagEnemyBullet)
@@ -25,9 +26,16 @@ def system_collision_bullet_player(world: esper.World, explosion_conf: dict, del
                 new_p_s = CSurface(pygame.Vector2(0,0),pygame.Color(0,0,0), 0)
                 p_pst.state = PlayerState.DEAD
                 p_p.time_recover += delta_time
+                p_p.collisioned=True
                 world.remove_component(player_entity, CSurface)
                 world.add_component(player_entity, new_p_s)
 
+    for player_entity, (p_s, p_t, p_p, p_pst) in player_components:
+        if p_p.collisioned:
+            if p_p.time_recover > player_conf["time_recover"]:
+                world.delete_entity(player_entity)
+            else:
+                p_p.time_recover += delta_time
             
                 
 
