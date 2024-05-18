@@ -57,6 +57,7 @@ class PlayScene(Scene):
         self.current_time=0
         self.debug_mode = DebugView.NONE
         self.pause=False
+        self.action_start=False
         self.player_entity=create_player_square(self.ecs_world, self.player_cfg)
         self.player_c_v=self.ecs_world.component_for_entity(self.player_entity, CVelocity)
         self.player_c_t=self.ecs_world.component_for_entity(self.player_entity, CTransform)
@@ -83,14 +84,18 @@ class PlayScene(Scene):
             self.switch_scene("MENU_SCENE")
         if action.name=='PLAYER_LEFT':
             if action.phase == CommandPhase.START:
+                self.action_start=True
                 self.player_c_v.vel.x -= self.player_cfg['input_velocity']
             elif action.phase == CommandPhase.END:
-                self.player_c_v.vel.x += self.player_cfg['input_velocity']
-        if action.name=='PLAYER_RIGHT':
+                if self.action_start:
+                    self.player_c_v.vel.x += self.player_cfg['input_velocity']
+        if action.name=='PLAYER_RIGHT':  
             if action.phase == CommandPhase.START:
+                self.action_start=True
                 self.player_c_v.vel.x += self.player_cfg['input_velocity']
             elif action.phase == CommandPhase.END:
-                self.player_c_v.vel.x -= self.player_cfg['input_velocity']
+                if self.action_start:
+                    self.player_c_v.vel.x -= self.player_cfg['input_velocity']
 
         if action.name=="PLAYER_BEHAVIOR" and self.level_state.state==LevelState.PLAY_TIME and action.phase == CommandPhase.START and not self.pause:
             if self.ecs_world.entity_exists(self.player_entity):
@@ -136,7 +141,7 @@ class PlayScene(Scene):
             system_screen_player(self.ecs_world, self._game_engine.screen, self.level_cfg) 
             system_enemy_fire(self.ecs_world, delta_time ,self.level_cfg["enemy_bullet"])
             system_collision_bullet_enemy(self.ecs_world, self.explosion_cfg["enemy"], self.player_c_t.pos, self.player_c_s.area, self.player_cfg)   
-            system_collision_bullet_player(self.ecs_world, self.player_cfg, self.explosion_cfg["player"], delta_time)
+            system_collision_bullet_player(self.ecs_world, self.player_cfg, self.explosion_cfg["player"], delta_time, self.level_entity)
             system_player_bullet_state(self.ecs_world, self.player_cfg, self.player_c_t.pos, self.player_c_s.surf.get_rect())     
              
     def do_draw(self, screen):

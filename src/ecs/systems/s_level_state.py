@@ -16,7 +16,7 @@ def system_level_state(world: esper.World, level_entity: int, current_time:float
         c_ls.state = LevelState.READY_DONE
     elif(c_ls.state==LevelState.READY_DONE):
        _do_ready_done_state(c_ls, world, level_cfg, enemies_cfg, ready)
-    elif(c_ls.state==LevelState.PLAY_TIME and player.__len__()==0):
+    elif(c_ls.state==LevelState.GAME_OVER_RECIEVED and player.__len__()==0):
         c_ls.state = LevelState.GAME_OVER
     elif(c_ls.state==LevelState.PLAY_TIME and enemies.__len__()==0):
         c_ls.state = LevelState.LEVEL_ACHIEVED
