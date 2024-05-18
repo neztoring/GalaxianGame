@@ -29,10 +29,10 @@ def create_star(world: esper.World, pos: pygame.Vector2, color: pygame.Vector2,v
     return star_entity
 
 
-def create_star_spawner(world: esper.World, starfield_cfg: dict,screen_w:str):
+def create_star_spawner(world: esper.World, starfield_cfg: dict,screen_w:str,screen_y:str):
     spawner_entity = world.create_entity()
     world.add_component(spawner_entity,
-                        CStarSpawner(starfield_cfg,screen_w))
+                        CStarSpawner(starfield_cfg,screen_w,screen_y))
     
 def create_sprite(world: esper.World, pos: pygame.Vector2,vel: pygame.Vector2,
                   surface:pygame.Surface)->int:

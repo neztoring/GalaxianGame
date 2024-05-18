@@ -70,7 +70,7 @@ class PlayScene(Scene):
         self.ecs_world.add_component(quit_to_menu_action,
                                      CInputCommand("QUIT_TO_MENU", pygame.K_ESCAPE))
         
-        create_star_spawner(self.ecs_world,self.starfield_cfg,self.windows_cfg['size']['w'])
+        create_star_spawner(self.ecs_world,self.starfield_cfg,self.windows_cfg['size']['w'],self.windows_cfg['size']['h'])
         create_input_player(self.ecs_world)
         create_flag(self.ecs_world,pygame.Vector2(200,10))
         create_text(self.ecs_world,"0"+str(self.level), 8, pygame.Color(255, 255, 255), pygame.Vector2(210, 15), TextAlignment.LEFT, 0)
