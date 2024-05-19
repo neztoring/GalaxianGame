@@ -56,7 +56,7 @@ class MenuScene(Scene):
         self.ecs_world.add_component(start_game_action,
                                      CInputCommand("START_GAME", pygame.K_z))
         
-        create_star_spawner(self.ecs_world,self.starfield_cfg,self.window_cfg['size']['w'])
+        create_star_spawner(self.ecs_world,self.starfield_cfg,self.window_cfg['size']['w'],self.window_cfg['size']['h'])
 
     def do_action(self, action: CInputCommand):
         if action.name == "START_GAME" and action.phase == CommandPhase.START:

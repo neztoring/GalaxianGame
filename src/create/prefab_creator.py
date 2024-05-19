@@ -29,10 +29,10 @@ def create_star(world: esper.World, pos: pygame.Vector2, color: pygame.Vector2,v
     return star_entity
 
 
-def create_star_spawner(world: esper.World, starfield_cfg: dict,screen_w:str):
+def create_star_spawner(world: esper.World, starfield_cfg: dict,screen_w:str,screen_y:str):
     spawner_entity = world.create_entity()
     world.add_component(spawner_entity,
-                        CStarSpawner(starfield_cfg,screen_w))
+                        CStarSpawner(starfield_cfg,screen_w,screen_y))
     
 def create_sprite(world: esper.World, pos: pygame.Vector2,vel: pygame.Vector2,
                   surface:pygame.Surface)->int:
@@ -129,8 +129,10 @@ def fire_player_bullet(world: esper.World, player_bullet_cfg: dict):
     bullets_in_screen = world.get_component(CPlayerBulletState)
     if len(bullets_in_screen) > 0:
         (_, c_pbst) = bullets_in_screen[0]
+        if c_pbst.state != PlayerBulletState.FIRED:
+            ServiceLocator.sounds_service.play(player_bullet_cfg["sound"])
         c_pbst.state = PlayerBulletState.FIRED
-        ServiceLocator.sounds_service.play(player_bullet_cfg["sound"])
+        
         
 def create_enemy_starship(world: esper.World, level_data: dict):
     starship_entity = world.create_entity()

@@ -3,8 +3,8 @@ import json
 import pygame
 
 
-from src.create.prefab_creator import create_enemy_starship, create_flag, create_star_spawner, fire_player_bullet, create_input_player, create_player_square, create_starship_enemies
-from src.create.prefab_creator_interface import TextAlignment, create_text, create_text_score
+from src.create.prefab_creator import create_flag, create_star_spawner, fire_player_bullet, create_input_player, create_player_square, create_starship_enemies
+from src.create.prefab_creator_interface import TextAlignment, create_level_state, create_text, create_text_score
 from src.ecs.components.c_input_command import CInputCommand, CommandPhase
 from src.ecs.components.c_level_state import CLevelState, LevelState
 from src.ecs.components.c_surface import CSurface
@@ -57,6 +57,7 @@ class PlayScene(Scene):
         self.current_time=0
         self.debug_mode = DebugView.NONE
         self.pause=False
+        self.action_start=False
         self.player_entity=create_player_square(self.ecs_world, self.player_cfg)
         self.player_c_v=self.ecs_world.component_for_entity(self.player_entity, CVelocity)
         self.player_c_t=self.ecs_world.component_for_entity(self.player_entity, CTransform)
@@ -69,7 +70,7 @@ class PlayScene(Scene):
         self.ecs_world.add_component(quit_to_menu_action,
                                      CInputCommand("QUIT_TO_MENU", pygame.K_ESCAPE))
         
-        create_star_spawner(self.ecs_world,self.starfield_cfg,self.windows_cfg['size']['w'])
+        create_star_spawner(self.ecs_world,self.starfield_cfg,self.windows_cfg['size']['w'],self.windows_cfg['size']['h'])
         create_input_player(self.ecs_world)
         create_flag(self.ecs_world,pygame.Vector2(200,10))
         create_text(self.ecs_world,"0"+str(self.level), 8, pygame.Color(255, 255, 255), pygame.Vector2(210, 15), TextAlignment.LEFT, 0)
@@ -83,21 +84,25 @@ class PlayScene(Scene):
             self.switch_scene("MENU_SCENE")
         if action.name=='PLAYER_LEFT':
             if action.phase == CommandPhase.START:
+                self.action_start=True
                 self.player_c_v.vel.x -= self.player_cfg['input_velocity']
             elif action.phase == CommandPhase.END:
-                self.player_c_v.vel.x += self.player_cfg['input_velocity']
-        if action.name=='PLAYER_RIGHT':
+                if self.action_start:
+                    self.player_c_v.vel.x += self.player_cfg['input_velocity']
+        if action.name=='PLAYER_RIGHT':  
             if action.phase == CommandPhase.START:
+                self.action_start=True
                 self.player_c_v.vel.x += self.player_cfg['input_velocity']
             elif action.phase == CommandPhase.END:
-                self.player_c_v.vel.x -= self.player_cfg['input_velocity']
+                if self.action_start:
+                    self.player_c_v.vel.x -= self.player_cfg['input_velocity']
 
-        if action.name=="PLAYER_BEHAVIOR" and self.level_state.state==LevelState.PLAY_TIME and action.phase == CommandPhase.START:
+        if action.name=="PLAYER_BEHAVIOR" and self.level_state.state==LevelState.PLAY_TIME and action.phase == CommandPhase.START and not self.pause:
             if self.ecs_world.entity_exists(self.player_entity):
                 fire_player_bullet(self.ecs_world, self.player_cfg["bullets"])
         if action.name=="PLAYER_BEHAVIOR" and self.level_state.state==LevelState.GAME_OVER_DONE and action.phase == CommandPhase.START:    
             self.switch_scene("MENU_SCENE")
-        if action.name=='PAUSE' and self.level_state.state==LevelState.READY:
+        if action.name=='PAUSE' and self.level_state.state==LevelState.PLAY_TIME:
             if action.phase == CommandPhase.START:          
                 if not self.pause:  
                     ServiceLocator.sounds_service.play(self.player_cfg["game_paused"])
@@ -136,7 +141,7 @@ class PlayScene(Scene):
             system_screen_player(self.ecs_world, self._game_engine.screen, self.level_cfg) 
             system_enemy_fire(self.ecs_world, delta_time ,self.level_cfg["enemy_bullet"])
             system_collision_bullet_enemy(self.ecs_world, self.explosion_cfg["enemy"], self.player_c_t.pos, self.player_c_s.area, self.player_cfg)   
-            system_collision_bullet_player(self.ecs_world, self.player_cfg, self.explosion_cfg["player"], delta_time)
+            system_collision_bullet_player(self.ecs_world, self.player_cfg, self.explosion_cfg["player"], delta_time, self.level_entity)
             system_player_bullet_state(self.ecs_world, self.player_cfg, self.player_c_t.pos, self.player_c_s.surf.get_rect())     
              
     def do_draw(self, screen):
