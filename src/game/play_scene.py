@@ -18,6 +18,10 @@ from src.ecs.systems.s_enemy_fire import system_enemy_fire
 from src.ecs.systems.s_level_state import system_level_state
 from src.ecs.systems.s_movement import system_movement
 from src.ecs.systems.s_bullet_delete import system_bullet_delete
+from src.ecs.systems.s_movement_enemy import system_movement_enemy
+from src.ecs.systems.s_movement_enemy_bullet import system_movement_enemy_bullet
+from src.ecs.systems.s_movement_player import system_movement_player
+from src.ecs.systems.s_movement_player_bullet import system_movement_player_bullet
 from src.ecs.systems.s_movement_star import system_movement_star
 from src.ecs.systems.s_player_bullet_state import system_player_bullet_state
 from src.ecs.systems.s_player_state import system_player_state
@@ -133,7 +137,11 @@ class PlayScene(Scene):
         system_blink(self.ecs_world,delta_time)
          
         if not self.pause:
-            system_movement(self.ecs_world, delta_time)
+            #system_movement(self.ecs_world, delta_time)
+            system_movement_player(self.ecs_world, delta_time)
+            system_movement_player_bullet(self.ecs_world, delta_time)
+            system_movement_enemy(self.ecs_world, delta_time)
+            system_movement_enemy_bullet(self.ecs_world, delta_time)
             system_animation(self.ecs_world, delta_time)
             system_bullet_delete(self.ecs_world, self._game_engine.screen, self.player_cfg)
             system_player_state(self.ecs_world, self.player_cfg)
