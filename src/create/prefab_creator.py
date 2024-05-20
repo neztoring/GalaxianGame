@@ -66,12 +66,11 @@ def create_input_player(world:esper.World):
     world.add_component(input_pause,CInputCommand("PAUSE",pygame.K_p))
     world.add_component(input_change_debug_mode,CInputCommand("DEBUG",pygame.K_d))
 
-def create_logo(ecs_world:esper.World, window_json:dict, pos :pygame.Vector2) ->int:
+def create_logo(ecs_world:esper.World,pos :pygame.Vector2,vel :pygame.Vector2) ->int:
      
         logo_sprite = ServiceLocator.images_service.get("assets/img/invaders_logo_title.png")
-        vel = pygame.Vector2(10,10)
         logo_entity = create_sprite(ecs_world,pos,vel,logo_sprite)
-        ecs_world.add_component(logo_entity,CMoveTo( (pygame.Vector2(60,(window_json['size']['h']))),pygame.Vector2(60,80) )) 
+
 
         return logo_entity 
 
