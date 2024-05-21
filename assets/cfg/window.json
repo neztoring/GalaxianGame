@@ -9,5 +9,9 @@
         "g": 0,
         "b": 0
     },
-    "framerate": 60
+    "framerate": 60,
+    "text_speed": {
+        "min": 40,
+        "max": 40
+    }
 }
